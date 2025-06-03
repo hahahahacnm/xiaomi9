@@ -82,9 +82,12 @@ jobs:
         uses: actions/cache@v3
         with:
           path: /home/runner/.ccache
-          key: ccache-${{ runner.os }}-${{ github.ref }}
+          key: ${{ runner.os }}-${{ github.repository }}-${{ matrix.FEIL }}
           restore-keys: |
-            ccache-${{ runner.os }}-
+            ${{ runner.os }}-${{ github.repository }}-${{ matrix.FEIL }}-v2-
+            ${{ runner.os }}-${{ github.repository }}-${{ matrix.FEIL }}-
+            ${{ runner.os }}-${{ github.repository }}-
+            ${{ runner.os }}-
             
       - name: Setup ccache environment
         run: |
