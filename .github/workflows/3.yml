@@ -37,6 +37,11 @@ on:
       enable_sched_ext:
        description: "是否添加风驰驱动"
        required: false
+       default: true
+       type: boolean
+      enable_o3:
+       description: "是否启用o3编译"
+       required: false
        default: false
        type: boolean
 
@@ -228,7 +233,16 @@ jobs:
           export PATH="$GITHUB_WORKSPACE/kernel_workspace/kernel_platform/prebuilts/clang/host/linux-x86/clang-r510928/bin:$PATH"
           export PATH="/usr/lib/ccache:$PATH"
           cd kernel_workspace/kernel_platform/common
+
+          if [ "${{ github.event.inputs.enable_o3 }}" = "true" ]; then
           make -j$(nproc --all) LLVM=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CC=clang RUSTC=../../prebuilts/rust/linux-x86/1.73.0b/bin/rustc PAHOLE=../../prebuilts/kernel-build-tools/linux-x86/bin/pahole LD=ld.lld  HOSTLD=ld.lld O=out KCFLAGS+=-Wno-error gki_defconfig all
+          else
+          make -j$(nproc --all) LLVM=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CC=clang RUSTC=../../prebuilts/rust/linux-x86/1.73.0b/bin/rustc PAHOLE=../../prebuilts/kernel-build-tools/linux-x86/bin/pahole LD=ld.lld  HOSTLD=ld.lld O=out KBUILD_CFLAGS=-O3 KCFLAGS+=-Wno-error gki_defconfig all
+          echo "Checking compiled optimization level:"
+          find out/ -name '*.cmd' | xargs grep -- '-O' | grep -v 'O2' | head
+          echo "Checking if ThinLTO was applied:"
+          find out/ -name '*.cmd' | xargs grep -E '\-flto(=thin)?' | head
+          fi
           # 创建输出目录并复制 Image
           mkdir -p ../dist
           cp out/arch/arm64/boot/Image ../dist/
