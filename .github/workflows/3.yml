@@ -237,7 +237,7 @@ jobs:
           cd kernel_workspace/kernel_platform/common
 
           if [ "${{ github.event.inputs.enable_o3 }}" = "true" ]; then
-          make -j$(nproc --all) LLVM=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CC=clang RUSTC=../../prebuilts/rust/linux-x86/1.73.0b/bin/rustc PAHOLE=../../prebuilts/kernel-build-tools/linux-x86/bin/pahole LD=ld.lld  HOSTLD=ld.lld O=out KBUILD_CFLAGS='-O3' KCFLAGS='-Wno-error' gki_defconfig all
+          make -j$(nproc --all) LLVM=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CC=clang RUSTC=../../prebuilts/rust/linux-x86/1.73.0b/bin/rustc PAHOLE=../../prebuilts/kernel-build-tools/linux-x86/bin/pahole LD=ld.lld  HOSTLD=ld.lld O=out KCFLAGS+=-O2 gki_defconfig all
           echo "Checking compiled optimization level:"
           find out/ -name '*.cmd' | xargs grep -- '-O' | grep -v 'O2' | head
           echo "Checking if ThinLTO was applied:"
