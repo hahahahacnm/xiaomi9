@@ -39,8 +39,8 @@ on:
        required: false
        default: true
        type: boolean
-      enable_o3:
-       description: "是否启用o3编译"
+      enable_o2:
+       description: "是否启用o2编译"
        required: false
        default: false
        type: boolean
@@ -236,7 +236,7 @@ jobs:
           export PATH="/usr/lib/ccache:$PATH"
           cd kernel_workspace/kernel_platform/common
 
-          if [ "${{ github.event.inputs.enable_o3 }}" = "true" ]; then
+          if [ "${{ github.event.inputs.enable_o2 }}" = "true" ]; then
           make -j$(nproc --all) LLVM=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CC=clang RUSTC=../../prebuilts/rust/linux-x86/1.73.0b/bin/rustc PAHOLE=../../prebuilts/kernel-build-tools/linux-x86/bin/pahole LD=ld.lld  HOSTLD=ld.lld O=out KCFLAGS+=-O2 gki_defconfig all
           echo "Checking compiled optimization level:"
           find out/ -name '*.cmd' | xargs grep -- '-O' | grep -v 'O2' | head
