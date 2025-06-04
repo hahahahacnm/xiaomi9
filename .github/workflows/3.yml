@@ -231,20 +231,33 @@ jobs:
           if [ "${{ matrix.FEIL }}" = "oneplus_13t" ]; then
           export KBUILD_BUILD_TIMESTAMP="Tue Jan 20 03:24:58 UTC 2025"         
           fi
-     
-          export PATH="$GITHUB_WORKSPACE/kernel_workspace/kernel_platform/prebuilts/clang/host/linux-x86/clang-r510928/bin:$PATH"
-          export PATH="/usr/lib/ccache:$PATH"
+
+          # 加入 clang 到 PATH
+          export PATH="${{ github.workspace }}/kernel_workspace/kernel_platform/prebuilts/clang/host/linux-x86/clang-r510928/bin:$PATH"
+          # 加入 ccache 到 PATH
+          export PATH="/usr/lib/ccache:$PATH" 
+
+          # 设置基础构建参数
+          export MAKE_ARGS="LLVM=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CC=clang \
+          RUSTC=../../prebuilts/rust/linux-x86/1.73.0b/bin/rustc \
+          PAHOLE=../../prebuilts/kernel-build-tools/linux-x86/bin/pahole \
+          LD=ld.lld HOSTLD=ld.lld O=out SOURCE_DATE_EPOCH=${SOURCE_DATE_EPOCH}"
+          echo "Using SOURCE_DATE_EPOCH: $SOURCE_DATE_EPOCH"
+          # 进入源码目录
           cd kernel_workspace/kernel_platform/common
+          # 执行 defconfig
+          make -j$(nproc) $MAKE_ARGS gki_defconfig
 
           if [ "${{ github.event.inputs.enable_o3 }}" = "true" ]; then
-          make -j$(nproc --all) LLVM=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CC=clang RUSTC=../../prebuilts/rust/linux-x86/1.73.0b/bin/rustc PAHOLE=../../prebuilts/kernel-build-tools/linux-x86/bin/pahole LD=ld.lld  HOSTLD=ld.lld O=out KBUILD_CFLAGS='-O3' KCFLAGS='-Wno-error' gki_defconfig all
+          # 编译内核（使用 -O3 优化，关闭 warning->error）
+          KBUILD_CFLAGS='-O3' KCFLAGS='-Wno-error' make -j$(nproc) $MAKE_ARGS all
           echo "Checking compiled optimization level:"
           find out/ -name '*.cmd' | xargs grep -- '-O' | grep -v 'O2' | head
           echo "Checking if ThinLTO was applied:"
           find out/ -name '*.cmd' | xargs grep -E '\-flto(=thin)?' | head
           else
-          make -j$(nproc --all) LLVM=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CC=clang RUSTC=../../prebuilts/rust/linux-x86/1.73.0b/bin/rustc PAHOLE=../../prebuilts/kernel-build-tools/linux-x86/bin/pahole LD=ld.lld  HOSTLD=ld.lld O=out KCFLAGS+=-Wno-error gki_defconfig all
-          fi
+          make -j$(nproc) $MAKE_ARGS all
+          
           # 创建输出目录并复制 Image
           mkdir -p ../dist
           cp out/arch/arm64/boot/Image ../dist/
