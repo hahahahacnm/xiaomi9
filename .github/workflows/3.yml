@@ -22,7 +22,7 @@ on:
         type: choice
         description: "修改内核名称"
         required: true
-        default: '-android15-8-g013ec21bba94-abogki383916444'
+        default: '-android15-8-g0261dbe3cf7e-ab12786384-4k'
         options:
           - -android15-8-g013ec21bba94-abogki383916444-byKUAN@ITXUU
           - -android15-8-g0261dbe3cf7e-ab12786384-4k
@@ -73,7 +73,7 @@ jobs:
         if: ${{ github.event.inputs.BUILD_RUN == 'ubuntu-latest' }}
         run: |
          git config --global user.name "build"
-         git config --global user.email "123456@cnm.com"
+         git config --global user.email "2219911811@qq.com"
 
       - name: Install dependencies
         if: ${{ github.event.inputs.BUILD_RUN == 'ubuntu-latest' }}
